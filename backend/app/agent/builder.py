@@ -1,10 +1,9 @@
-from __future__ import annotations
-
+import boto3
 from langchain.agents import create_agent
 from langchain_aws import ChatBedrock
 
-from app.agent.config import Settings
-from app.agent.tools import get_tools
+from .config import Settings
+from .tools import get_tools
 
 
 def build_system_prompt() -> str:
@@ -19,13 +18,17 @@ def build_system_prompt() -> str:
 
 
 def build_agent(settings: Settings):
-    llm = ChatBedrock(
-        model_id=settings.bedrock_model_id,
+    bedrock_client = boto3.client(
+        service_name="bedrock-runtime",
         region_name=settings.aws_region,
-        model_kwargs={"temperature": settings.temperature},
-        credentials_profile_name=None,
         aws_access_key_id=settings.aws_access_key_id,
         aws_secret_access_key=settings.aws_secret_access_key,
+    )
+
+    llm = ChatBedrock(
+        client=bedrock_client,
+        model_id=settings.bedrock_model_id,
+        model_kwargs={"temperature": settings.temperature},
     )
 
     return create_agent(

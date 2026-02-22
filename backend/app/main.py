@@ -10,9 +10,9 @@ from fastapi import Depends, FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, StreamingResponse
 
-from app.agent.builder import build_agent
-from app.agent.config import Settings, get_settings
-from app.schemas.chat import ChatRequest
+from .agent.builder import build_agent
+from .agent.config import Settings, get_settings
+from .schemas.chat import ChatRequest
 
 logger = logging.getLogger("agent_api")
 
@@ -32,7 +32,9 @@ async def catch_exceptions(request: Request, call_next):
         return await call_next(request)
     except Exception as exc:  # noqa: BLE001
         logger.exception("Unhandled server error", exc_info=exc)
-        return JSONResponse(status_code=500, content={"detail": "Internal server error"})
+        return JSONResponse(
+            status_code=500, content={"detail": "Internal server error"}
+        )
 
 
 settings = get_settings()
@@ -51,7 +53,10 @@ def get_agent(config: Settings = Depends(get_settings)):
 
 async def stream_agent_events(agent, payload: ChatRequest) -> AsyncGenerator[str, None]:
     input_payload = {
-        "messages": [{"role": message.role, "content": message.content} for message in payload.messages]
+        "messages": [
+            {"role": message.role, "content": message.content}
+            for message in payload.messages
+        ]
     }
 
     async for event in agent.astream_events(input_payload, version="v2"):
@@ -89,3 +94,9 @@ async def chat(payload: ChatRequest, agent=Depends(get_agent)):
 @app.get("/health")
 async def health():
     return {"status": "ok"}
+
+
+if __name__ == "__main__":
+    import uvicorn
+
+    uvicorn.run(app, host="localhost", port=8000)
