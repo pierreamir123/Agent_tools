@@ -1,8 +1,8 @@
 import ReactMarkdown from "react-markdown";
 import { cn } from "@/lib/utils";
 import type { ChatMessage as ChatMessageType } from "@/lib/api";
-
 import { Bot, User } from "lucide-react";
+import { MessageParser } from "./message-parser";
 
 export function ChatMessage({ message }: { message: ChatMessageType }): JSX.Element {
   const isAssistant = message.role === "assistant";
@@ -21,9 +21,7 @@ export function ChatMessage({ message }: { message: ChatMessageType }): JSX.Elem
           : "bg-gradient-to-br from-primary to-indigo-600 text-white"
       )}>
         {isAssistant ? (
-          <div className="prose prose-sm prose-invert max-w-none">
-            <ReactMarkdown>{message.content}</ReactMarkdown>
-          </div>
+          <MessageParser content={message.content} />
         ) : (
           <p className="whitespace-pre-wrap m-0 text-sm md:text-base leading-relaxed">{message.content}</p>
         )}
@@ -37,4 +35,5 @@ export function ChatMessage({ message }: { message: ChatMessageType }): JSX.Elem
     </div>
   );
 }
+
 

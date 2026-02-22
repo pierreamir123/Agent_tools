@@ -30,6 +30,16 @@ h1, h2, h3, h4, h5, h6 {
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
+.prose {
+  --tw-prose-body: theme('colors.slate.300');
+  --tw-prose-headings: theme('colors.white');
+  --tw-prose-links: theme('colors.primary.DEFAULT');
+}
+
+.prose-xs {
+  @apply text-[11px] leading-relaxed;
+}
+
 .prose pre {
   @apply rounded-xl bg-slate-900/50 p-4 border border-white/10 text-slate-100 overflow-x-auto;
 }
