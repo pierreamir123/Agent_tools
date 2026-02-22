@@ -2,8 +2,8 @@ import boto3
 from langchain.agents import create_agent
 from langchain_aws import ChatBedrock
 
-from .config import Settings
-from .tools import get_tools
+from app.agent.config import Settings
+from app.agent.tools import get_tools
 
 
 def build_system_prompt() -> str:
@@ -23,6 +23,7 @@ def build_agent(settings: Settings):
         region_name=settings.aws_region,
         aws_access_key_id=settings.aws_access_key_id,
         aws_secret_access_key=settings.aws_secret_access_key,
+        aws_session_token=settings.aws_session_token,
     )
 
     llm = ChatBedrock(
@@ -35,5 +36,4 @@ def build_agent(settings: Settings):
         model=llm,
         tools=get_tools(),
         system_prompt=build_system_prompt(),
-        response_format={"type": "text"},
     )

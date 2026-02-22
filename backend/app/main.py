@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import json
 import logging
-import uuid
 from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 
@@ -10,15 +9,16 @@ from fastapi import Depends, FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, StreamingResponse
 
-from .agent.builder import build_agent
-from .agent.config import Settings, get_settings
-from .schemas.chat import ChatRequest
+from app.agent.builder import build_agent
+from app.agent.config import Settings, get_settings
+from app.schemas.chat import ChatRequest
 
 logger = logging.getLogger("agent_api")
 
 
 @asynccontextmanager
 async def lifespan(_: FastAPI):
+
     logging.basicConfig(level=logging.INFO)
     yield
 
@@ -40,7 +40,7 @@ async def catch_exceptions(request: Request, call_next):
 settings = get_settings()
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[settings.cors_origin],
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -62,18 +62,27 @@ async def stream_agent_events(agent, payload: ChatRequest) -> AsyncGenerator[str
     async for event in agent.astream_events(input_payload, version="v2"):
         event_name = event.get("event")
         data = event.get("data", {})
+        run_id = event.get("run_id")
 
         if event_name == "on_chat_model_stream":
             chunk = data.get("chunk")
             if chunk and chunk.content:
-                for token in chunk.content:
-                    yield f"data: {json.dumps({'type': 'token', 'token': token})}\n\n"
+                # Optimized: yield the entire content chunk at once if it's a string
+                # or as-is if it's already a single token.
+                content = chunk.content
+                if isinstance(content, list):
+                    # Handle cases where content might be a list of blocks
+                    for block in content:
+                        if isinstance(block, dict) and "text" in block:
+                            yield f"data: {json.dumps({'type': 'token', 'token': block['text']})}\n\n"
+                else:
+                    yield f"data: {json.dumps({'type': 'token', 'token': str(content)})}\n\n"
 
         if event_name == "on_tool_start":
-            yield f"data: {json.dumps({'type': 'tool', 'step': {'id': str(uuid.uuid4()), 'toolName': event.get('name', 'tool'), 'input': json.dumps(data.get('input', {})), 'status': 'started'}})}\n\n"
+            yield f"data: {json.dumps({'type': 'tool', 'step': {'id': run_id, 'toolName': event.get('name', 'tool'), 'input': str(data.get('input', {})), 'status': 'started'}})}\n\n"
 
         if event_name == "on_tool_end":
-            yield f"data: {json.dumps({'type': 'tool', 'step': {'id': str(uuid.uuid4()), 'toolName': event.get('name', 'tool'), 'input': '', 'output': json.dumps(data.get('output', '')), 'status': 'completed'}})}\n\n"
+            yield f"data: {json.dumps({'type': 'tool', 'step': {'id': run_id, 'toolName': event.get('name', 'tool'), 'input': '', 'output': str(data.get('output', '')), 'status': 'completed'}})}\n\n"
 
     yield f"data: {json.dumps({'type': 'done'})}\n\n"
 

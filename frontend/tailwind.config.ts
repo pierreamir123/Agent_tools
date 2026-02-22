@@ -6,38 +6,78 @@ export default {
   theme: {
     container: {
       center: true,
-      padding: "1rem"
+      padding: "2rem",
+      screens: {
+        "2xl": "1400px",
+      },
     },
     extend: {
       colors: {
-        border: "hsl(214.3 31.8% 91.4%)",
-        input: "hsl(214.3 31.8% 91.4%)",
-        ring: "hsl(221.2 83.2% 53.3%)",
-        background: "hsl(0 0% 100%)",
-        foreground: "hsl(222.2 84% 4.9%)",
-        muted: {
-          DEFAULT: "hsl(210 40% 96.1%)",
-          foreground: "hsl(215.4 16.3% 46.9%)"
-        },
+        border: "hsl(217.2 32.6% 17.5%)",
+        input: "hsl(217.2 32.6% 17.5%)",
+        ring: "hsl(224.3 76.3% 48%)",
+        background: "hsl(222.2 84% 4.9%)",
+        foreground: "hsl(210 40% 98%)",
         primary: {
-          DEFAULT: "hsl(221.2 83.2% 53.3%)",
-          foreground: "hsl(210 40% 98%)"
+          DEFAULT: "hsl(224.3 76.3% 48%)",
+          foreground: "hsl(210 40% 98%)",
         },
         secondary: {
-          DEFAULT: "hsl(210 40% 96.1%)",
-          foreground: "hsl(222.2 47.4% 11.2%)"
+          DEFAULT: "hsl(217.2 32.6% 17.5%)",
+          foreground: "hsl(210 40% 98%)",
         },
         destructive: {
-          DEFAULT: "hsl(0 84.2% 60.2%)",
-          foreground: "hsl(210 40% 98%)"
-        }
+          DEFAULT: "hsl(0 62.8% 30.6%)",
+          foreground: "hsl(210 40% 98%)",
+        },
+        muted: {
+          DEFAULT: "hsl(217.2 32.6% 17.5%)",
+          foreground: "hsl(215 20.2% 65.1%)",
+        },
+        accent: {
+          DEFAULT: "hsl(217.2 32.6% 17.5%)",
+          foreground: "hsl(210 40% 98%)",
+        },
+        popover: {
+          DEFAULT: "hsl(222.2 84% 4.9%)",
+          foreground: "hsl(210 40% 98%)",
+        },
+        card: {
+          DEFAULT: "hsl(222.2 84% 4.9%)",
+          foreground: "hsl(210 40% 98%)",
+        },
       },
       borderRadius: {
-        lg: "0.5rem",
-        md: "calc(0.5rem - 2px)",
-        sm: "calc(0.5rem - 4px)"
-      }
-    }
+        lg: "var(--radius)",
+        md: "calc(var(--radius) - 2px)",
+        sm: "calc(var(--radius) - 4px)",
+      },
+      keyframes: {
+        "accordion-down": {
+          from: { height: "0" },
+          to: { height: "var(--radix-accordion-content-height)" },
+        },
+        "accordion-up": {
+          from: { height: "var(--radix-accordion-content-height)" },
+          to: { height: "0" },
+        },
+        "fade-in-up": {
+          "0%": { opacity: "0", transform: "translateY(10px)" },
+          "100%": { opacity: "1", transform: "translateY(0)" },
+        },
+        "glow-pulse": {
+          "0%, 100%": { opacity: "0.5", filter: "blur(8px)" },
+          "50%": { opacity: "1", filter: "blur(12px)" },
+        },
+      },
+      animation: {
+        "accordion-down": "accordion-down 0.2s ease-out",
+        "accordion-up": "accordion-up 0.2s ease-out",
+        "fade-in-up": "fade-in-up 0.4s ease-out forwards",
+        "glow-pulse": "glow-pulse 2s ease-in-out infinite",
+      },
+    },
   },
-  plugins: []
+  plugins: [],
 } satisfies Config;
+
