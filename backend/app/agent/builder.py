@@ -34,6 +34,6 @@ def build_agent(settings: Settings):
 
     return create_agent(
         model=llm,
-        tools=get_tools(),
+        tools=get_tools(settings),
         system_prompt=build_system_prompt(),
     )

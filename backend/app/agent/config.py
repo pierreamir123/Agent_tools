@@ -16,6 +16,10 @@ class Settings(BaseSettings):
     cors_origin: str = Field(
         default="http://localhost:5173", validation_alias="CORS_ORIGIN"
     )
+    o365_client_id: str | None = Field(default=None, validation_alias="O365_CLIENT_ID")
+    o365_client_secret: str | None = Field(
+        default=None, validation_alias="O365_CLIENT_SECRET"
+    )
 
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
