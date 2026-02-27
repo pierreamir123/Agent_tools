@@ -1,9 +1,9 @@
 .PHONY: run test install clean lint
 
 CONDA_ENV = AIMYK1
-PYTHON = conda run -n $(CONDA_ENV) python3
-PIP = conda run -n $(CONDA_ENV) pip
-UVICORN = conda run -n $(CONDA_ENV) uvicorn
+PYTHON = python3
+PIP = pip
+UVICORN = uvicorn
 
 install:
 	$(PIP) install -r requirements.txt

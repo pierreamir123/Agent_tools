@@ -52,12 +52,13 @@ def get_agent(config: Settings = Depends(get_settings)):
 
 
 async def stream_agent_events(agent, payload: ChatRequest) -> AsyncGenerator[str, None]:
-    input_payload = {
-        "messages": [
-            {"role": message.role, "content": message.content}
-            for message in payload.messages
-        ]
-    }
+    # No automatic RAG: the agent decides when to use the knowledge base via bm25_retrieval_tool
+    user_messages = [m.content for m in payload.messages if m.role == "user"]
+    query = user_messages[-1] if user_messages else ""
+    logger.info("Chat request: messages=%d, last_user_query=%s", len(payload.messages), repr(query[:80]) if query else "")
+
+    messages = [{"role": m.role, "content": m.content} for m in payload.messages]
+    input_payload = {"messages": messages}
 
     async for event in agent.astream_events(input_payload, version="v2"):
         event_name = event.get("event")
@@ -79,11 +80,19 @@ async def stream_agent_events(agent, payload: ChatRequest) -> AsyncGenerator[str
                     yield f"data: {json.dumps({'type': 'token', 'token': str(content)})}\n\n"
 
         if event_name == "on_tool_start":
-            yield f"data: {json.dumps({'type': 'tool', 'step': {'id': run_id, 'toolName': event.get('name', 'tool'), 'input': str(data.get('input', {})), 'status': 'started'}})}\n\n"
+            tool_name = event.get("name", "tool")
+            tool_input = data.get("input", {})
+            logger.info("Agent action: tool_start tool=%s input=%s", tool_name, tool_input)
+            yield f"data: {json.dumps({'type': 'tool', 'step': {'id': run_id, 'toolName': tool_name, 'input': str(tool_input), 'status': 'started'}})}\n\n"
 
         if event_name == "on_tool_end":
-            yield f"data: {json.dumps({'type': 'tool', 'step': {'id': run_id, 'toolName': event.get('name', 'tool'), 'input': '', 'output': str(data.get('output', '')), 'status': 'completed'}})}\n\n"
+            tool_name = event.get("name", "tool")
+            tool_output = data.get("output", "")
+            out_preview = str(tool_output)[:200] + "..." if len(str(tool_output)) > 200 else str(tool_output)
+            logger.info("Agent action: tool_end tool=%s output=%s", tool_name, repr(out_preview))
+            yield f"data: {json.dumps({'type': 'tool', 'step': {'id': run_id, 'toolName': tool_name, 'input': '', 'output': str(tool_output), 'status': 'completed'}})}\n\n"
 
+    logger.info("Agent stream completed")
     yield f"data: {json.dumps({'type': 'done'})}\n\n"
 
 
