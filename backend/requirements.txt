@@ -6,3 +6,6 @@ pydantic==2.9.2
 python-dotenv==1.0.1
 pydantic-settings==2.5.2
 boto3==1.35.40
+langchain-qdrant>=0.2.0
+langchain-openai>=0.3.0
+qdrant-client>=1.12.0
